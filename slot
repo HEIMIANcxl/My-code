@@ -1,0 +1,106 @@
+def read_file(file_name):
+    #in summuary, this is to create an list from the file
+    lines = []
+    with open(file_name, 'r') as f:
+        for line in f:
+            if line.strip():  # If the line is not empty
+                lines.append(line)
+    matrices = []
+    i = 0
+    # Loop through the lines in steps of 3 to form matrices
+    while i < len(lines):
+        if i + 2 < len(lines):  # Ensure I have a full set of 3 lines for a matrix
+            matrix = []
+            for j in range(3):  # Collect three rows to form a matrix
+                row = lines[i+j].split()  # Split each line into elements
+                int_row = []
+                for num in row:  # Convert each element to an integer
+                    int_row.append(int(num))
+                matrix.append(int_row)
+            matrices.append(matrix)
+        i += 3  # Move to the next set of 3 lines
+
+    return matrices
+
+#this function is to create machine and put the number
+#combination into the machine
+def print_slot_matrix(matrix):
+    print(" ***********")
+    print("($)%%%%%%%($)")
+    #I use to for loop to visit number on list and list.
+    #And then input the number
+    for row in matrix:
+        print("($)", end=" ")
+        for number in row:
+            print("{}".format(number), end=" ")
+        print("($)")
+    print("+++--------+++")
+    print(" ***********")
+
+
+#in order to check the jackpot, 
+def check_jackpot(matrix):
+    jackpot_count = 0
+
+    # + 1 ensure that every each jackpot will get points
+    # Not once there has one jackpot, the other is not count
+    # Check rows and columns for jackpots
+    for i in range(3):
+        if matrix[i][0] == matrix[i][1] == matrix[i][2]:
+            jackpot_count += 1
+        if matrix[0][i] == matrix[1][i] == matrix[2][i]:
+            jackpot_count += 1
+
+    # Check diagonals for jackpots
+    if matrix[0][0] == matrix[1][1] == matrix[2][2]:
+        jackpot_count += 1
+    if matrix[0][2] == matrix[1][1] == matrix[2][0]:
+        jackpot_count += 1
+    return jackpot_count
+
+
+#to check the user input
+def get_initial_tokens():
+    while True: #Start an infinite loop, prompting the user until a valid input is received
+        try:
+            tokens = int(input("How many tokens do you wish to begin with? "))
+            if tokens > 0:
+                return tokens ## If the input is a positive integer, returns this value and exits the function and loop
+            else:
+                print("Please enter a positive integer.")
+        except ValueError:
+            print("Please input an integer.")#If the conversion to an integer fails (that is, the input is not an integer), the error is caught and handled, and the user is prompted again
+
+def main():
+    matrices = read_file("played_slots.txt")#get the list
+    tokens = get_initial_tokens()#to create the start in program from user
+    matrix_index = 0  # Track the current matrix
+
+    while matrix_index < len(matrices) and tokens > 0:
+        print_slot_matrix(matrices[matrix_index]) #to print all the diagram and input 9 numbers
+        jackpot_count = check_jackpot(matrices[matrix_index]) #in case there are different same line
+        if check_jackpot(matrices[matrix_index]): #to get the jackpot count, how many jackpot I dectected
+            for count in range(jackpot_count):  #how many count, how many point
+                print("JACKPOT!")
+                tokens += 10
+        else:
+            tokens -= 1
+        #F-strings provide a neat and convenient way to embed Python expressions into string text for formatting.
+        print(f"You now have: {tokens} tokens")
+
+        # Check for continuation at the end of each loop iteration
+        if matrix_index < len(matrices) - 1 and tokens > 0:
+            user_input = input("Press carrage return to spin the slots, or type any other key character to quit: ")
+            if user_input != "":
+                #f using is same as the .format(), we can direct use "f" in
+                #order to insert the object value which is tokens
+                print(f"The house has closed. You are left with {tokens} tokens")
+                return  # Exit the function
+        matrix_index += 1  # Move to the next matrix
+    #when running out of tokens
+    if tokens <= 0:
+        print("Sorry, you are out of tokens.")
+    print(f"Final token count: {tokens}")
+    
+
+main()
